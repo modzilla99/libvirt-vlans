@@ -1,0 +1,41 @@
+#!/usr/bin/bash
+# /etc/libvirt/hooks/qemu
+# Docs: https://www.libvirt.org/hooks.html
+
+# Author: 2021-01-26 - Ingo Höft (Ingo@Hoeft-online.de)
+# Licence: GPLv3 (https://www.gnu.org/licenses/gpl-3.0.en.html)
+
+GUEST=$1
+OPERATION=$2
+SUB_OPERATION=$3
+EXTRA_PARM=$4
+
+case "$OPERATION" in
+    prepare)
+      ;;
+    start)
+        if [[ "$SUB_OPERATION" != "begin" ]] || [[ "$EXTRA_PARM" != "-" ]]; then
+            echo "Error: Unhandled parameter \$3='$SUB_OPERATION' or \$4='$EXTRA_PARM' to $0 \$1 \$2 \$3 \$4" >&2
+            exit 1
+        fi
+        /etc/libvirt/hooks/vlan-config.py "$GUEST" > /var/log/libvirt/qemu/"$GUEST"-vlanconf.log
+        ;;
+    started)
+    ;;
+    stopped)
+        ;;
+    release)
+        ;;
+    migrate)
+        ;;
+    restore)
+        ;;
+    reconnect)
+        ;;
+    attach)
+        ;;
+    *)
+        echo "Error: qemu hook called with unexpected options $*" >&2
+        exit 1
+        ;;
+esac
